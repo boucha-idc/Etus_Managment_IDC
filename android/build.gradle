@@ -1,0 +1,44 @@
+buildscript {
+    ext.kotlin_version = '1.9.22'
+    repositories {
+        google() // Required for Android dependencies
+        mavenCentral() // Required for Maven dependencies
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.0.2' // Update if needed
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22'
+       // Dynamically uses the defined Kotlin version
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// Root project build directory
+rootProject.buildDir = "../build"
+
+// Configure subprojects
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}" // Organizes build directories
+
+    afterEvaluate { project -> // Runs after project evaluation
+        if (project.hasProperty('android')) {
+            project.android {
+                if (namespace == null) { // Adds a default namespace if not specified
+                    namespace project.group
+                }
+            }
+        }
+    }
+
+    project.evaluationDependsOn(":app")
+}
+
+// Task for cleaning the build directory
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
