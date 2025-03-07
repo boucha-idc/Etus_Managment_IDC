@@ -5,7 +5,8 @@ import 'package:idc_etus_bechar/widgets/rapport_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
-
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import '../../utils/app_colors.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -87,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 5),
               Obx(() {
                 if (controller.isLoading.value) {
-                  return const CircularProgressIndicator();  // Show loading spinner while fetching data
+                  return const SpinKitCircle(color: AppColors.primary, size: 25.0); // Show loading spinner while fetching data
                 } else {
                   return Text(
                     controller.userName.value.isNotEmpty ? controller.userName.value : "Loading...",
@@ -134,33 +135,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 50),
-              /*const Padding(
-                padding: EdgeInsets.only(left: 30,right: 190),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "List Raport ",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                     Padding(
-                       padding: EdgeInsets.only(top: 4),
-                       child: SizedBox(
-                        height: 2,
-                        width: 120,
-                        child:Divider(
-                          color: Colors.black26,  // Line color
-                          thickness: 2.0,  // Line thickness
-                        )
-                                         ),
-                     ),
-                  ],
-                ),
-              ),*/
               SizedBox(
                 height: 300,
                 child: Obx(() {
@@ -175,14 +149,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     itemCount: controller.controllerReports.length,
                     itemBuilder: (context, index) {
                       var report = controller.controllerReports[index];
-                      return GestureDetector(
-                        onTap: () {
-                          Get.toNamed('/dialog_rapport');
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: RapportCard(report: report),
-                        ),
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: RapportCard(report: report),
                       );
                     },
                   );

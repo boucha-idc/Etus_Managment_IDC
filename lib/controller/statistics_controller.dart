@@ -7,6 +7,7 @@ import '../models/maintenance.dart';
 class StatisticsController {
   var types = <Maintenance>[].obs;
   var isLoading = false.obs;
+  var busStatistics = <Map<String, dynamic>>[].obs;
   final ApiServicesAdmin StatisticsService = ApiServicesAdmin();
 
   Future<Map<String, dynamic>> getBusDetailsById(String busId) async {
@@ -33,15 +34,29 @@ class StatisticsController {
       throw Exception('Bus with ID $busId not found');
     }
   }
-  void fetchTypes() async {
+
+  void fetchBusStatisticsById(int busId) async {
     try {
-      isLoading.value = true;
-      var fetchedTypes = await StatisticsService.fetchTypes();
-      types.assignAll(fetchedTypes);
+      Future.delayed(Duration.zero, () {
+        isLoading.value = true;
+      });
+
+      var statistics = await StatisticsService.fetchBusComponents(busId);
+
+      Future.delayed(Duration.zero, () {
+        busStatistics.assignAll(statistics);
+      });
     } catch (e) {
+      print("Error fetching bus statistics: $e");
       Get.snackbar("Error", e.toString());
     } finally {
-      isLoading.value = false;
+      Future.delayed(Duration.zero, () {
+        isLoading.value = false;
+      });
     }
   }
+
+
+
+
 }

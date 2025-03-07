@@ -528,25 +528,16 @@ class ApiServiceController {
     }
   }*/
 
-
-
-
-
-
   /// Function to update the employee password
   Future<Map<String, dynamic>> updatePassword(String password) async {
     try {
       final result = await getTokenAndUserId();
       String? token = result['token'];
       int userId = result['user_id'];
-
       if (token == null) throw Exception("Token is not available.");
       if (userId == 0) throw Exception("User ID is null or 0.");
-
       String apiUrl = "$baseUrl/employees/$userId";
       print("API URL: $apiUrl");
-
-
       final response = await http.put(
         Uri.parse(apiUrl),
         headers: {
@@ -568,7 +559,6 @@ class ApiServiceController {
       throw Exception("Error updating password.");
     }
   }
-
   Future<String> uploadImage(File imageFile, String token, int userId) async {
     try {
       var uri = Uri.parse("$baseUrl/employees/$userId");
@@ -576,30 +566,38 @@ class ApiServiceController {
 
       request.headers.addAll({
         "Authorization": "Bearer $token",
-        "Accept": "application/json",
+        "Content-Type": "multipart/form-data"
       });
-      request.files.add(await http.MultipartFile.fromPath("image", imageFile.path));
+
+      var stream = http.ByteStream(imageFile.openRead().cast());
+      var length = await imageFile.length();
+
+      request.files.add(http.MultipartFile(
+        "image",
+        stream,
+        length,
+        filename: imageFile.path.split('/').last,
+      ));
+
+      print("Sending request to: $uri");
+      print("Headers: ${request.headers}");
+
       var response = await request.send();
-
       var responseData = await response.stream.bytesToString();
-      print("Response from server: $responseData");
-
       var jsonResponse = jsonDecode(responseData);
 
-      if (jsonResponse["success"] == true && jsonResponse.containsKey("data") && jsonResponse["data"].containsKey("image")) {
-        return jsonResponse["data"]["image"];
-      } else {
-        throw Exception("Server did not return the image URL. Response: $jsonResponse");
-      }
+      print("Response: $jsonResponse");
 
+      if (response.statusCode == 200 && jsonResponse["success"] == true) {
+        return jsonResponse["data"]["image"] ?? "";
+      } else {
+        throw Exception(jsonResponse["message"] ?? "Failed to upload image");
+      }
     } catch (e) {
       print("Image Upload Error: $e");
       throw Exception("Error uploading image.");
     }
   }
-
-
-
 
 
 
@@ -609,7 +607,6 @@ class ApiServiceController {
       final result = await getTokenAndUserId();
       String? token = result['token'];
       int userId = result['user_id'];
-
       if (token == null) throw Exception("Token is missing.");
       if (userId == 0) throw Exception("User ID is invalid.");
 
@@ -617,27 +614,13 @@ class ApiServiceController {
         return await updatePassword(password);
       } else if (updateType == 'image' && imageFile != null) {
         print("Uploading image...");
-        String imageFileName = await uploadImage(imageFile, token, userId);
-
-        if (imageFileName.isEmpty) throw Exception("Image upload failed.");
-        print("Image uploaded successfully: $imageFileName");
-        String imageFileUrl = "https://idevelopcompany.dz/IDC%20Projects/BusManagement/storage/$imageFileName";
-        String apiUrl = "$baseUrl/employees/$userId";
-
-        final response = await http.put(
-          Uri.parse(apiUrl),
-          headers: {
-            "Authorization": "Bearer $token",
-          },
-          body: jsonEncode({"image": imageFileUrl}),
-        );
-
-        if (response.statusCode == 200) {
-          print("Profile updated successfully.");
-          return jsonDecode(response.body);
-        } else {
-          throw Exception("Failed to update profile: ${response.body}");
-        }
+        String imageUrl = await uploadImage(imageFile, token, userId);
+        print("Image uploaded successfully: $imageUrl");
+        return {
+          "success": true,
+          "message": "Image updated successfully",
+          "image": imageUrl,
+        };
       } else {
         throw Exception("Invalid update type or missing image file.");
       }
@@ -646,6 +629,7 @@ class ApiServiceController {
       throw Exception("Failed to update employee details.");
     }
   }
+
 
 
 

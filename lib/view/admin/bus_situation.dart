@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:idc_etus_bechar/widgets/circle_with_label.dart';
 import 'package:idc_etus_bechar/widgets/details_card.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:idc_etus_bechar/utils/app_colors.dart';
 class BusSituation extends StatefulWidget {
   const BusSituation({super.key});
 
@@ -73,7 +75,6 @@ class _BusSituationState extends State<BusSituation> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Profile image container
                           Row(
                             children: [
                               Container(
@@ -145,7 +146,7 @@ class _BusSituationState extends State<BusSituation> {
                                 builder: (context, snapshot) {
                                   // Check the connection state
                                   if (snapshot.connectionState == ConnectionState.waiting) {
-                                    return Center(child: CircularProgressIndicator());
+                                    return Center(child: SpinKitCircle(color: AppColors.primary, size: 25.0));
                                   } else if (snapshot.hasError) {
                                     return Center(child: Text('Error: ${snapshot.error}'));
                                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -196,7 +197,7 @@ class _BusSituationState extends State<BusSituation> {
                                 future: buses,
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState == ConnectionState.waiting) {
-                                    return Center(child: CircularProgressIndicator());
+                                    return Center(child: SpinKitCircle(color: AppColors.primary, size: 25.0));
                                   } else if (snapshot.hasError) {
                                     return Center(child: Text('Error: ${snapshot.error}'));
                                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -279,7 +280,7 @@ class _BusSituationState extends State<BusSituation> {
                 future: buses,  // Use the 'buses' variable here
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return Center(child: SpinKitCircle(color: AppColors.primary, size: 25.0));
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {

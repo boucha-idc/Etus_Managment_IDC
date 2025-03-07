@@ -20,7 +20,6 @@ class _RecipeScreenState extends State<RecipeScreen> {
   final Rx<DateTime?> selectedStartDate = Rx<DateTime?>(null);
   final Rx<DateTime?> selectedEndDate = Rx<DateTime?>(null);
   final busId = int.tryParse(Get.arguments as String? ?? '') ?? 0;
-  //final BusTripController busTripController = Get.find<BusTripController>();
   final BusTripController busTripController = Get.find<BusTripController>();
 
   @override

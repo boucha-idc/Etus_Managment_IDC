@@ -90,6 +90,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/bus_status.png
+    - assets/images/profile_img_test.png
     - assets/icon/
     - assets/status_bus/
     - assets/images/accountant_pic.jpg

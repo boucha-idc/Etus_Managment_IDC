@@ -13,24 +13,30 @@ class AccountScreen extends StatefulWidget {
   State<AccountScreen> createState() => _AccountScreenState();
 }
 
-class _AccountScreenState extends State<AccountScreen> {
-
-  final ProfileController controller = Get.put(ProfileController());
+class _AccountScreenState extends State<AccountScreen> with WidgetsBindingObserver {
+  final ProfileController controller = Get.put(ProfileController(), permanent: true);
+  //final ProfileController controller = Get.put(ProfileController());
   String encodedUrl ="";
   @override
   void initState() {
         super.initState();
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          String imageValue = controller.image.value;
+        encodedUrl = Uri.encodeFull(controller.image.value);
+        WidgetsBinding.instance.addObserver(this);
 
-          if (imageValue != null && imageValue.isNotEmpty) {
-            // Decode and encode the URL properly
-            String decodedUrl = imageValue.replaceAll(r'\/', '/');
-            encodedUrl = Uri.encodeFull(decodedUrl);
-          }
-          setState(() {});
-        });
       }
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      controller.fetchUserProfile();
+      setState(() {});  // Force UI update
+    }
+  }
 
 
 
@@ -50,7 +56,7 @@ class _AccountScreenState extends State<AccountScreen> {
                  children: [
                    InkWell(
                      onTap: () {
-                       final String currentRole = Get.arguments;
+                       final String currentRole = Get.arguments ?? '';
                        if (currentRole == "admin") {
                          Get.toNamed('/HomePage');
                        } else {
@@ -122,22 +128,16 @@ class _AccountScreenState extends State<AccountScreen> {
                      Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        Obx(() => Text(
                           controller.userName.value,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                        )),
                         SizedBox(height: 10),
                         // Display the user's role
-                        Text(
+                        Obx(() => Text(
                           controller.userRole.value,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        )),
                       ],
                     ),
                     const Spacer(),

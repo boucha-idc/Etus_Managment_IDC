@@ -12,6 +12,8 @@ import 'package:get/get.dart';
 import 'package:idc_etus_bechar/services/api_services_admin.dart';
 import 'package:idc_etus_bechar/models/bus.dart';
 import 'package:fl_chart/fl_chart.dart';
+
+import '../home_page.dart';
 class StatisticsScreen extends StatefulWidget {
   @override
   _StatisticsScreenState createState() => _StatisticsScreenState();
@@ -28,11 +30,17 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   late int id;
   String selectedPeriod = 'Last Month';
   late StatisticsController statisticsController;
+  late StatisticsController statisticsController1;
 
   @override
   void initState() {
     super.initState();
     statisticsController = Get.put(StatisticsController());
+    statisticsController1 = Get.put(StatisticsController());
+    //statisticsController1.fetchBusStatisticsById(int.parse(busId));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      statisticsController.fetchBusStatisticsById(int.parse(busId));
+    });
     _fetchBusDetails();
   }
 
@@ -76,7 +84,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          Get.toNamed('/HomePage');
+                          Get.off(() => HomePage(), arguments: {'index': 1}); // Navigate to HomePage with BusSituation selected
                         },
                         child: Container(
                           width: 40,
@@ -406,25 +414,51 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                             return const Center(child: CircularProgressIndicator());
                           }
 
-                          if (statisticsController.types.isEmpty) {
-                            return const Center(child: Text("No components available"));
-                          }
+                          return Obx(() {
+                            if (statisticsController.busStatistics.isEmpty) {
+                              return const Center(child: Text("No components available"));
+                            }
 
-                          return ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: statisticsController.types.length,
-                            itemBuilder: (context, index) {
-                              final type = statisticsController.types[index];
-                              return Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: ListTile(
-                                  title: Text(type.name),
-                                ),
-                              );
-                            },
-                          );
-                        }),
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: statisticsController.busStatistics.length,
+                              itemBuilder: (context, index) {
+                                final type = statisticsController.busStatistics[index];
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 2.0),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.transparent, // Transparent background
+                                      borderRadius: BorderRadius.circular(22),
+                                      border: Border.all(color: Colors.grey.shade100, width: 1), // Subtle border
+                                    ),
+                                    child: ListTile(
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                      title: Text(
+                                        type['name'], // Assuming 'name' is a key in the data
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      leading: const Icon(
+                                        Icons.directions_bus,
+                                        color: AppColors.primary,
+                                      ),
+
+                                    ),
+                                  ),
+                                );
+
+
+                              },
+                            );
+                          });
+                        })
+
+
                       ],
                     ],
                   ),

@@ -16,7 +16,6 @@ class UpdateAccountController extends GetxController {
   var isLoading = false.obs;
 
   final ImagePicker _picker = ImagePicker();
-
   /// Fetch User Profile
   Future<void> fetchUserProfile() async {
     try {
@@ -41,20 +40,22 @@ class UpdateAccountController extends GetxController {
   }
 
   Future<void> updateUserProfile() async {
+    if (imageFile.value == null) {
+      print("No image selected. Ask user to pick one!");
+      Get.snackbar("Error", "Please select an image before updating.");
+      return;
+    }
+
     isLoading.value = true;
     try {
-      if (imageFile.value == null) {
-        print("No image selected. Ask user to pick one!");
-        Get.snackbar("Error", "Please select an image before updating.");
-        return;
-      }
-
       await _userService.updateEmployeeDetails(
         "",
         updateType: 'image',
         imageFile: imageFile.value!,
       );
 
+      // Refresh profile data after updating the image
+      await fetchUserProfile();
       Get.snackbar("Success", "Profile image updated successfully.");
     } catch (e) {
       print("Error updating profile: $e");
@@ -63,6 +64,7 @@ class UpdateAccountController extends GetxController {
       isLoading.value = false;
     }
   }
+
 
 
   Future<String> _encodeImageToBase64(File imageFile) async {

@@ -59,7 +59,7 @@ class WorkerDetails extends StatelessWidget {
                 ),
               ),
               // Role tabs
-              Positioned(
+             /* Positioned(
                 top: 120,
                 left: 10,
                 right: 10,
@@ -91,8 +91,44 @@ class WorkerDetails extends StatelessWidget {
                     ),
                   );
                 }),
-              ),
-              Positioned(
+              ),*/
+          Positioned(
+            top: 120,
+            left: 10,
+            right: 10,
+            child: Obx(() {
+              return controller.roles.isEmpty
+                  ? Center(child: SpinKitCircle(color: AppColors.primary, size: 25.0))
+                  : Container(
+                width: screenWidth,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: const Color(0xff133E87).withOpacity(0.42),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  itemCount: controller.roles.length,
+                  itemBuilder: (context, index) {
+                    final role = controller.roles[index];
+                    return _buildTab(
+                      label: role,
+                      isSelected: controller.selectedRole.value == role,
+                      onTap: () {
+                        controller.selectedRole.value = role; // Update selected role
+                        controller.fetchEmployeesByRole(role);
+                      },
+                    );
+                  },
+                ),
+              );
+            }),
+          ),
+
+
+
+          Positioned(
                 top: 210,
                 left: 15,
                 right: 15,

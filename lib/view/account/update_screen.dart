@@ -8,7 +8,8 @@ import 'package:get/get.dart';
 import 'package:idc_etus_bechar/widgets/update_Item.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import '../../utils/app_colors.dart';
 class UpdateAccountScreen extends StatefulWidget {
   const UpdateAccountScreen({Key? key}) : super(key: key);
 
@@ -16,26 +17,64 @@ class UpdateAccountScreen extends StatefulWidget {
   _UpdateAccountScreenState createState() => _UpdateAccountScreenState();
 }
 
-class _UpdateAccountScreenState extends State<UpdateAccountScreen> {
+class _UpdateAccountScreenState extends State<UpdateAccountScreen> with WidgetsBindingObserver{
   final UpdateAccountController controller = Get.put(UpdateAccountController());
   File? _image;
   final ImagePicker _picker = ImagePicker();
-
+  String? imageUrl;
+  late TextEditingController _nameController;
+  late TextEditingController _roleController;
+  late TextEditingController _phoneController;
+  late TextEditingController _emailController;
   @override
   void initState() {
     super.initState();
     controller.fetchUserProfile();
+    _nameController = TextEditingController(text: controller.user.value?.name?? '');
+    _roleController = TextEditingController(text: controller.user.value?.role ?? '');
+    _phoneController = TextEditingController(text: controller.user.value?.phoneNumber ?? '');
+    _emailController = TextEditingController(text: controller.user.value?.email ?? '');
+    ever(controller.user, (user) {
+      setState(() {
+        if (user?.image != null && user!.image!.isNotEmpty) {
+          imageUrl = Uri.parse(user.image!).toString();
+        } else {
+          imageUrl = "";
+        }
+        _nameController.text = user?.name ?? '';
+        _roleController.text = user?.role ?? '';
+        _phoneController.text = user?.phoneNumber ?? '';
+        _emailController.text = user?.email ?? '';
+      });
+    });
+    WidgetsBinding.instance.addObserver(this);
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _nameController.dispose();
+    _roleController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      controller.fetchUserProfile();
+    }}
+
+
   Future<void> _checkPermissions() async {
-    if (Platform.isAndroid) {
-      if (await Permission.photos.isGranted) {
-        await _pickImage();
-      } else {
-        await Permission.photos.request();
-      }
+    if (await Permission.photos.request().isGranted) {
+      _pickImage();
+    } else {
+      print("Permission denied.");
     }
   }
+
 
   Future<void> _pickImage() async {
     try {
@@ -72,7 +111,7 @@ class _UpdateAccountScreenState extends State<UpdateAccountScreen> {
                   children: [
                     InkWell(
                       onTap: () {
-                        Get.toNamed('/account');
+                        Get.toNamed('/account', arguments: controller.user.value?.role ?? '');
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -101,114 +140,111 @@ class _UpdateAccountScreenState extends State<UpdateAccountScreen> {
               const SizedBox(height: 40),
               Obx(() {
                 return controller.user.value == null
-                    ? CircularProgressIndicator()
+                    ? SpinKitCircle(color: AppColors.primary, size: 25.0)
                     : Column(
                   children: [
                     UpdateItem(
                       title: "Photo",
                       widget: Column(
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(50),
-                            child: _image == null
-                                ? (controller.user.value!.image?.isEmpty ?? true
-                                ? Image.asset(
-                              'assets/images/profile_img_test.png',
-                              height: 100,
-                              width: 100,
-                              fit: BoxFit.cover,
-                            )
-                                : Image.network(
-                              controller.user.value!.image != null
-                                  ? Uri.encodeFull(controller.user.value!.image!)
-                                  : "",
-                              height: 100,
-                              width: 100,
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) {
-                                  return child;
-                                } else {
-                                  return Center(
-                                    child: CircularProgressIndicator(
-                                      value: loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress.cumulativeBytesLoaded /
-                                          (loadingProgress.expectedTotalBytes ?? 1)
-                                          : null,
+                          GestureDetector(
+                            onTap: () async {
+                              final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+                              if (pickedFile != null) {
+                                controller.imageFile.value = File(pickedFile.path);
+                              }
+                            },
+                            child: Column(
+                              children: [
+                                Obx(() {
+                                  return ClipOval(
+                                    child: controller.imageFile.value != null
+                                        ? Image.file(
+                                      controller.imageFile.value!,
+                                      height: 100,
+                                      width: 100,
+                                      fit: BoxFit.cover,
+                                    )
+                                        : Image.network(
+                                      controller.user.value?.image ?? '',
+                                       height: 100,
+                                       width: 100,
+                                       fit: BoxFit.cover,
+                                       errorBuilder: (context, error, stackTrace) {
+                                        return Image.asset(
+                                          "assets/images/profile_img_test.png",
+                                          height: 100,
+                                          width: 100,
+                                          fit: BoxFit.cover,
+                                        );
+                                      },
                                     ),
                                   );
-                                }
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  'assets/images/profile_img_test.png',
-                                  height: 100,
-                                  width: 100,
-                                  fit: BoxFit.cover,
-                                );
-                              },
-                            ))
-                                : Image.file(
-                              _image!,
-                              height: 100,
-                              width: 100,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                                }),
 
 
-                          TextButton(
-                            onPressed: _checkPermissions,
-                            style: TextButton.styleFrom(
-                              foregroundColor: AppColors.primary,
+
+
+                                const SizedBox(height: 8),
+                                Text(
+                                  "Upload Image",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color:AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                     // Underlined text
+                                  ),
+                                ),
+                              ],
                             ),
-                            child: const Text("Upload Image"),
                           ),
                         ],
                       ),
                     ),
-                     UpdateItem(
+
+                    // Other fields (Name, Role, Phone, Email, Save button)
+                    UpdateItem(
                       title: "Name",
                       widget: TextField(
-                        controller: TextEditingController(text: controller.user.value?.name),
+                        controller: TextEditingController(text: _nameController.text),
                         readOnly: true,
-                        style:const  TextStyle(
+                        style: const TextStyle(
                           color: Colors.grey,
                         ),
                       ),
                     ),
                     const SizedBox(height: 40),
                     UpdateItem(
-                      widget: TextField(
-                        controller: TextEditingController(text: controller.user.value?.role),
-                        readOnly: true,
-                        style: TextStyle(
-                          color: Colors.grey,
-                        ),
-                      ),
                       title: "Role",
-                    ),
-                    const SizedBox(height: 40),
-                    UpdateItem(
                       widget: TextField(
-                        controller: TextEditingController(text: controller.user.value?.phoneNumber),
+                        controller: TextEditingController(text: _roleController.text),
                         readOnly: true,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.grey,
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 40),
+                    UpdateItem(
                       title: "Phone",
-                    ),
-                    const SizedBox(height: 40),
-                    UpdateItem(
                       widget: TextField(
-                        controller: TextEditingController(text: controller.user.value?.email),
+                        controller: TextEditingController(text:  _phoneController.text),
                         readOnly: true,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.grey,
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 40),
+                    UpdateItem(
                       title: "Email",
+                      widget: TextField(
+                        controller: TextEditingController(text: _emailController.text),
+                        readOnly: true,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 40),
                     Row(
@@ -242,7 +278,9 @@ class _UpdateAccountScreenState extends State<UpdateAccountScreen> {
                     ),
                   ],
                 );
-              }),
+              })
+
+
             ],
           ),
         ),

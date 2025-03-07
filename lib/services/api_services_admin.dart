@@ -14,7 +14,6 @@ class ApiServicesAdmin {
   }
   Future<Map<String, List<Bus>>> fetchBusData() async {
     final url = Uri.parse('$baseUrl/buses');
-
     try {
       final token = await getToken();
       if (token == null) {
@@ -163,28 +162,6 @@ class ApiServicesAdmin {
       return [];
     }
   }
- /* Future<Map<String, dynamic>> fetchBusStatistics() async {
-    final url = Uri.parse('$baseUrl/statistics/operations');
-    final token = await getToken();
-
-    if (token == null) {
-      throw Exception("Token is not available.");
-    }
-
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return data['data'];
-    } else {
-      throw Exception('Failed to fetch bus statistics');
-    }
-  }*/
   Future<List<BusTrip>> fetchTripBus(int busId) async {
     final url = Uri.parse('$baseUrl/recipes/paginated/dynamic-search');
 
@@ -261,33 +238,35 @@ class ApiServicesAdmin {
       throw Exception('Failed to fetch filtered recipes. Status code: ${response.statusCode}');
     }
   }
-  Future<List<Maintenance>> fetchTypes() async {
-    try {
-      final response = await http.get(
-        Uri.parse(baseUrl),
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
-      );
+  Future<List<Map<String, dynamic>>> fetchBusComponents(int busId) async {
+    final url = Uri.parse('$baseUrl/operations');
+    final token = await getToken();
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        if (data["success"] == true) {
-          List<Maintenance> types = (data["data"] as List)
-              .map((item) => Maintenance.fromJson(item))
-              .toList();
-          return types;
-        } else {
-          throw Exception("Failed to fetch types: ${data['message']}");
-        }
-      } else {
-        throw Exception("Failed to load types, Status Code: ${response.statusCode}");
-      }
-    } catch (e) {
-      throw Exception("Error fetching types: $e");
+    if (token == null) {
+      throw Exception("Token is not available.");
+    }
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      List<Map<String, dynamic>> operations = List<Map<String, dynamic>>.from(data['data']);
+      List<Map<String, dynamic>> filteredTypes = operations
+          .where((operation) => operation['bus_id'] == busId)
+          .map<Map<String, dynamic>>((operation) => operation['type'] as Map<String, dynamic>)
+          .toList();
+
+      return filteredTypes;
+    } else {
+      throw Exception('Failed to fetch bus statistics');
     }
   }
+
+
 
 }
 

@@ -1,17 +1,18 @@
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:idc_etus_bechar/controller/bus_controller.dart';
 import 'package:idc_etus_bechar/controller/worker_controller.dart';
 import 'package:idc_etus_bechar/models/circle_item.dart';
 import 'package:idc_etus_bechar/services/api_services_admin.dart';
 import 'package:idc_etus_bechar/services/api_services_controller.dart';
-import 'package:idc_etus_bechar/utils/app_colors.dart';
 import 'package:idc_etus_bechar/widgets/circle_with_label.dart';
-import 'package:idc_etus_bechar/widgets/custom_navigationbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:idc_etus_bechar/widgets/dashes_line.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:idc_etus_bechar/widgets/worker_card.dart';
+
+import '../../utils/app_colors.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -263,7 +264,7 @@ class _MainScreenState extends State<MainScreen> {
                        future: workercontroller.roleData, // Fetches the data
                        builder: (context, snapshot) {
                          if (snapshot.connectionState == ConnectionState.waiting) {
-                           return const Center(child: CircularProgressIndicator());
+                           return const Center(child: SpinKitCircle(color: AppColors.primary, size: 25.0));
                          } else if (snapshot.hasError) {
                            return Center(child: Text('Error: ${snapshot.error}'));
                          } else if (snapshot.hasData) {
@@ -295,12 +296,6 @@ class _MainScreenState extends State<MainScreen> {
              ),
            ),
          ),
-
-
-
-
-
-
        ],
      ),
           ),

@@ -5,12 +5,12 @@ import 'package:collection/collection.dart';
 
 class WorkerController extends GetxController {
   final ApiServicesAdmin workerService = ApiServicesAdmin();
-
   var employees = <User>[].obs;
   var roles = <String>[].obs;
   var isLoading = false.obs;
   var selectedRole = ''.obs;
   var totalEmployeeCount = 0.obs;
+  var cachedEmployees = <String, List<User>>{}.obs;
 
   late Future<Map<String, dynamic>> roleData;
 
@@ -21,8 +21,7 @@ class WorkerController extends GetxController {
     fetchEmployees();
     roleData = fetchEmployeesByRoleCounts();
   }
-
-  Future<void> fetchRoles() async {
+  /*Future<void> fetchRoles() async {
     try {
       isLoading.value = true;
       roles.value = await workerService.fetchRoles();
@@ -49,8 +48,43 @@ class WorkerController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }*/
+  Future<void> fetchRoles() async {
+    try {
+      isLoading.value = true;
+      roles.value = await workerService.fetchRoles();
+    } catch (e) {
+      print('Error fetching roles: $e');
+    } finally {
+      isLoading.value = false;
+    }
   }
+  Future<void> fetchEmployeesByRole(String role) async {
+    if (cachedEmployees.containsKey(role)) {
+      // Use cached data if available
+      employees.value = cachedEmployees[role]!;
+      selectedRole.value = role;
+      return;
+    }
 
+    try {
+      isLoading.value = true;
+      print('Fetching employees for role: $role');
+
+      selectedRole.value = role;
+      List<Map<String, dynamic>> fetchedData = await workerService.getEmployeesByRole(role);
+
+      print('Number of employees fetched for role "$role": ${fetchedData.length}');
+
+      List<User> employeeList = fetchedData.map((data) => User.fromJson(data)).toList();
+      employees.value = employeeList;
+      cachedEmployees[role] = employeeList; // Cache the data
+    } catch (e) {
+      print('Error fetching employees for role "$role": $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
   Future<void> fetchEmployees() async {
     try {
       isLoading(true);
@@ -63,7 +97,6 @@ class WorkerController extends GetxController {
       isLoading(false);
     }
   }
-
   Future<Map<String, dynamic>> fetchEmployeesByRoleCounts() async {
     try {
       List<User> employees = await workerService.fetchEmployees();
