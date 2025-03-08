@@ -21,34 +21,6 @@ class WorkerController extends GetxController {
     fetchEmployees();
     roleData = fetchEmployeesByRoleCounts();
   }
-  /*Future<void> fetchRoles() async {
-    try {
-      isLoading.value = true;
-      roles.value = await workerService.fetchRoles();
-    } catch (e) {
-      print('Error fetching roles: $e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  Future<void> fetchEmployeesByRole(String role) async {
-    try {
-      isLoading.value = true;
-      print('Fetching employees for role: $role');
-
-      selectedRole.value = role;
-      List<Map<String, dynamic>> fetchedData = await workerService.getEmployeesByRole(role);
-
-      print('Number of employees fetched for role "$role": ${fetchedData.length}');
-
-      employees.value = fetchedData.map((data) => User.fromJson(data)).toList();
-    } catch (e) {
-      print('Error fetching employees for role "$role": $e');
-    } finally {
-      isLoading.value = false;
-    }
-  }*/
   Future<void> fetchRoles() async {
     try {
       isLoading.value = true;

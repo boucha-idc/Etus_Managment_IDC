@@ -88,8 +88,6 @@ class BusTripController extends GetxController {
     try {
       final recipes = await busTripService.fetchFilteredRecipes(fromDate, toDate);
       print('Fetched recipes from service: $recipes');
-
-      // Filter recipes by busId if filterId is not null
       if (filterId != null) {
         _filteredRecipes.value = recipes.where((recipe) => recipe.busId == filterId).toList();
         print('Filtered recipes fetched: ${_filteredRecipes.value}');

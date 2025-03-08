@@ -11,7 +11,7 @@ class BusRapportController extends GetxController {
   var selectedDriver = ''.obs;
   var selectedRecipient = ''.obs;
   var selectedLineOption = ''.obs;
-  var isLoading = true.obs; // Loading state
+  var isLoading = true.obs;
   var errorMessage = ''.obs;
   var selectedOption = 'Working'.obs;
   bool success=false;
@@ -127,8 +127,6 @@ class BusRapportController extends GetxController {
       print("Selected Recipient ID: ${selectedRecipientData['id']}");
       print("Observation: $observationText");
       print("Selected Status: ${selectedOption.value}");
-
-      // Proceed only if valid data is available
       if (selectedLine['id'] != null && selectedDriverData['id'] != null && selectedRecipientData['id'] != null) {
         var busData = {
           "bus_id": bus_id,
